@@ -500,7 +500,7 @@
     <p>기록이 3회, 5회, 10회로 늘어날수록 실제 데이터의 비중이 커지고 예측이 본인의 몸에 맞게 수렴합니다.</p>
 
     <h4>3. 실제 기록이 있으면 그걸 우선합니다</h4>
-    <p>미래 날짜에도 생리 시작일을 미리 입력해 두면, 예측값 대신 그 실제 기록이 '다음 생리'로 표시됩니다. 예측은 기록이 없는 경우에만 사용됩니다.</p>
+    <p>생리 시작일은 오늘 또는 과거 날짜에만 기록할 수 있습니다. 예측은 기록이 없는 미래 날짜에 대해서만 사용됩니다.</p>
 
     <h4>4. 한계</h4>
     <p>이 예측은 단순 주기 평균에 기반하며, 배란 시점 변화·건강 이슈·수유·약물 복용 등은 반영하지 못합니다. 피임이나 임신 계획의 단독 근거로 사용하지 마세요.</p>
@@ -1082,11 +1082,15 @@
     optEnd.classList.toggle("active", !!e.end);
     optSex.classList.toggle("active", !!e.sex);
 
-    // a day already inside a marked period (and not itself the start) can't be a 시작일
-    const startDisabled = !!s && s.periodDays.has(selectedKey) && !s.startSet.has(selectedKey);
+    // future dates and mid-period days cannot be marked as 시작일
+    const isFuture = diffDays(keyToDate(selectedKey), midnight(new Date())) > 0;
+    const isMidPeriod = !!s && s.periodDays.has(selectedKey) && !s.startSet.has(selectedKey);
+    const startDisabled = isFuture || isMidPeriod;
     optStart.classList.toggle("disabled", startDisabled);
     optStart.querySelector(".ohint").textContent =
-      startDisabled ? "생리 기간 중에는 시작일로 표시할 수 없어요" : "생리가 시작된 날로 표시";
+      isFuture    ? "미래 날짜에는 설정할 수 없어요" :
+      isMidPeriod ? "생리 기간 중에는 시작일로 표시할 수 없어요" :
+                    "생리가 시작된 날로 표시";
 
     document.getElementById("noteHint").textContent = e.note ? "메모가 저장되어 있어요" : "직접 메모를 작성";
   }
